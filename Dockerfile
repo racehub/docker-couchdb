@@ -4,7 +4,8 @@ MAINTAINER Clemens Stolle klaemo@fastmail.fm
 
 # Install instructions from https://cwiki.apache.org/confluence/display/COUCHDB/Debian
 
-ENV COUCHDB_VERSION 1.6.0
+ENV COUCHDB_VERSION 1.6.1
+ENV COUCH_RC rc.4
 
 RUN useradd -d /var/lib/couchdb couchdb
 
@@ -21,13 +22,14 @@ RUN apt-get update -y && apt-get install -y lsb-release wget \
   && apt-get install -y erlang-nox erlang-dev build-essential \
   libmozjs185-cloudant libmozjs185-cloudant-dev \
   libnspr4 libnspr4-0d libnspr4-dev libcurl4-openssl-dev curl libicu-dev \
+  ca-certificates \
   --no-install-recommends \
   && rm -rf /var/lib/apt/lists/*
 
 # download and verify the source
-RUN curl -sSL http://apache.openmirror.de/couchdb/source/$COUCHDB_VERSION/apache-couchdb-$COUCHDB_VERSION.tar.gz -o couchdb.tar.gz \
-  && curl -sSL http://www.apache.org/dist/couchdb/source/$COUCHDB_VERSION/apache-couchdb-$COUCHDB_VERSION.tar.gz.asc -o couchdb.tar.gz.asc \
-  && curl -sSL http://www.apache.org/dist/couchdb/KEYS -o KEYS \
+RUN curl -sSL https://dist.apache.org/repos/dist/dev/couchdb/source/$COUCHDB_VERSION/$COUCH_RC/apache-couchdb-$COUCHDB_VERSION.tar.gz -o couchdb.tar.gz \
+  && curl -sSL https://dist.apache.org/repos/dist/dev/couchdb/source/$COUCHDB_VERSION/$COUCH_RC/apache-couchdb-$COUCHDB_VERSION.tar.gz.asc -o couchdb.tar.gz.asc \
+  && curl -sSL https://www.apache.org/dist/couchdb/KEYS -o KEYS \
   && gpg --import KEYS \
   && gpg --verify couchdb.tar.gz.asc \
   && mkdir -p /usr/src/couchdb \
@@ -38,7 +40,7 @@ RUN cd /usr/src/couchdb \
   && ./configure --with-js-lib=/usr/lib --with-js-include=/usr/include/mozjs \
   && make && make install
 
-RUN curl -o /usr/local/bin/gosu -SkL 'https://github.com/tianon/gosu/releases/download/1.1/gosu' \
+RUN curl -o /usr/local/bin/gosu -sSL 'https://github.com/tianon/gosu/releases/download/1.1/gosu' \
   && chmod +x /usr/local/bin/gosu
 
 # cleanup (libicu48 gets autoremoved, but we actually need it)
